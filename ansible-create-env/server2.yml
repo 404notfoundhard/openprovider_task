@@ -1,0 +1,9 @@
+---
+- name: Create environment for server 2
+  hosts: server-2
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Change zone to drop on eth1 interface
+      raw: firewall-cmd --zone=drop --change-interface=eth1 && firewall-cmd --reload
+      changed_when: false

@@ -1,0 +1,12 @@
+---
+- name: Create environment for server 1
+  hosts: server-1
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Create reject rule on eth1 interface
+      raw: firewall-cmd --zone=block --change-interface=eth1 && \
+           firewall-cmd --permanent --direct --add-rule ipv4 filter \
+           INPUT 0 -p icmp -s 0.0.0.0/0 -d 0.0.0.0/0 -j ACCEPT && \
+           firewall-cmd --reload
+      changed_when: false

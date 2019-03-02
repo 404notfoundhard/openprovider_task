@@ -1,0 +1,6 @@
+---
+- import_playbook: base.yml
+- import_playbook: server1.yml
+- import_playbook: server2.yml
+- import_playbook: server3.yml
+- import_playbook: server4.yml

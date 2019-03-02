@@ -1,0 +1,14 @@
+---
+- name: Check and install python
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: install python for ansible
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      changed_when: False
+    - name: start firewalld
+      systemd:
+        name: firewalld
+        state: started
+
