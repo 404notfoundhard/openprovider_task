@@ -1,7 +1,15 @@
 # Environment:
-- env:\
-password for all users: pass\
-sshkey users:
+- requirements:\
+Vagrant\
+ansible
+
+- env:  
+password for all users: pass 
+
+- Create environment command:  
+```vagrant up```
+
+ - ssh_key_users:
    - my_user1
    - my_user2
    - hacker
@@ -14,12 +22,12 @@ sshkey users:
        - users: service_user, user1, user2
        - AllowUsers: serviceuser, user1
        - pub_key_imported_for: serviceuser, user1, user2
-       - ssh_key_users: all
+       - imported_ssh_key_users: all
        - PasswordAuthorization: yes
 
    - server 4: # Password auth disabled and allow only service_user
        - users: service_user, user2
        - AllowUsers: serviceuser
        - pub_key_imported_for: serviceuser, user2
-       - ssh_key_users: my_user2
+       - imported_ssh_key_users: my_user2
        - PasswordAuthorization: no 
