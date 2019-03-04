@@ -1,14 +1,15 @@
 #!/usr/bin/python
 import paramiko
+# import libssh2
 import argparse
 import socket
 from socket import inet_aton
 import re
 
-parser = argparse.ArgumentParser(description='ssh default port = 22')
-
+parser = argparse.ArgumentParser(description='ssh default port = 22', formatter_class=lambda prog: argparse.RawTextHelpFormatter(prog, width=200))
 def ip_validate(ip_list, source):
     try:
+        line = 0
         for i, val in enumerate(ip_list):
             ip = re.sub(r':[0-9]{2,5}$','',val)
             inet_aton(ip)
@@ -27,11 +28,11 @@ def output(hosts, connect_checker, system_user, pass_auth, ssh_allow_users, ssh_
     for i in hosts:
         print '+'+'-'*50
         if 'bad' in connect_checker:
-            print '| HOST: '+i+' Connect: '+connect_checker
+            print '| HOST: '+i+' Connect status: '+connect_checker
             print '+'+'-'*50
             break
         else:
-            print '| HOST: '+i+' Connect: '+connect_checker
+            print '| HOST: '+i+' Connect status: '+connect_checker
             print '| System users: '+str(system_user)
             print '| SSH config:'
             print '| + PasswordAuthentication: '+pass_auth
@@ -46,18 +47,42 @@ def output(hosts, connect_checker, system_user, pass_auth, ssh_allow_users, ssh_
         print '+'+'-'*50
 
 def ssh_connect(ip,login,password,key):
-    pass
+    client = paramiko.SSHClient()
+    client.load_system_host_keys()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        client.connect(ip,username=login,password=password,auth_timeout=2, timeout=2)
+    except paramiko.ssh_exception.NoValidConnectionsError:
+        return 'Destination port unreacheble, it is possible to block with firewall.'
+    except socket.timeout:
+        return 'Connection timeout.'
+    except paramiko.ssh_exception.BadAuthenticationType as e:
+        return 'Bad authentication type, allowed type:'+str(e.allowed_types[0])
+    except paramiko.ssh_exception.AuthenticationException as f:
+        return 'Authentication failed'
+    except Exception:
+        return '-1'    
+    
+    else:
+        client.close()
+        return 'good'
+        
+    stdin, stdout, stderr = client.exec_command('ls -la')
+    
+
+
 
 def check_host(ip,login,password,key):
     pass
 
 if __name__ == "__main__":
-    group_mut = parser.add_mutually_exclusive_group()
+    group_mut1 = parser.add_mutually_exclusive_group()
+    group_mut2 = parser.add_mutually_exclusive_group()
     parser.add_argument('-l', dest='login', help='login for connect')
-    parser.add_argument('-p', dest='password', help='password for connect')
-    group_mut.add_argument('--key', dest='key', help='path to private key for auth')
-    group_mut.add_argument('--file', help='file where every line with ip[:port] value')
-    group_mut.add_argument('--ip', help='single target, you can set custom port: 10.10.10.10:2200',type=str)
+    group_mut2.add_argument('-p', dest='password', help='password for connect')
+    group_mut2.add_argument('-k', dest='key', help='path to private key for auth')
+    group_mut1.add_argument('--file', help='file where every line with ip[:port] value')
+    group_mut1.add_argument('--ip', help='single target, you can set custom port: 10.10.10.10:2200')
     parser.add_argument('--output',help='file to store info about host(s)')
 
     
@@ -65,6 +90,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     login = args.login
     password = args.password
+    key = ''
     if args.key:
         key = args.key
     
@@ -90,8 +116,10 @@ if __name__ == "__main__":
     for i,val in enumerate(ip_list):
         if ':' in ip_list[i]:
             continue
-        ip_list[i] = val+':22'
+        # ip_list[i] = val+':22'
     ip_validate(ip_list, source)
 
     for i in ip_list:
-        pass
+        aaa = ssh_connect(i,login,password,key)
+        print aaa
+        print '=============='

@@ -11,7 +11,7 @@
       user:
         name: "{{ item }}"
         # password: pass
-        password: $1$salt$M6xQvx9eSlM4zTu69di5B/
+        password: $1$nCdhnD5V$Ap4i6E9P.MvyVVgYxJtW.
         shell: /bin/bash
         createhome: yes
         # group: wheel
