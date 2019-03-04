@@ -5,7 +5,7 @@ import socket
 from socket import inet_aton
 import re
 
-parser = argparse.ArgumentParser(description='default port 22')
+parser = argparse.ArgumentParser(description='ssh default port = 22')
 
 def ip_validate(ip_list, source):
     try:
@@ -45,15 +45,29 @@ def output(hosts, connect_checker, system_user, pass_auth, ssh_allow_users, ssh_
                         print '|  + '+i
         print '+'+'-'*50
 
+def ssh_connect(ip,login,password,key):
+    pass
+
+def check_host(ip,login,password,key):
+    pass
 
 if __name__ == "__main__":
     group_mut = parser.add_mutually_exclusive_group()
-    group_mut.add_argument('--file', help='File where every line with ip[:port] value')
-    group_mut.add_argument('--ip', help='Single target, you can set custom port: 10.10.10.10:2200',type=str)
-    parser.add_argument('output',help='file to store info about host(s)')
+    parser.add_argument('-l', dest='login', help='login for connect')
+    parser.add_argument('-p', dest='password', help='password for connect')
+    group_mut.add_argument('--key', dest='key', help='path to private key for auth')
+    group_mut.add_argument('--file', help='file where every line with ip[:port] value')
+    group_mut.add_argument('--ip', help='single target, you can set custom port: 10.10.10.10:2200',type=str)
+    parser.add_argument('--output',help='file to store info about host(s)')
+
     
 
     args = parser.parse_args()
+    login = args.login
+    password = args.password
+    if args.key:
+        key = args.key
+    
     ip_list = []
     if args.ip:
         source = 'string'
@@ -79,21 +93,5 @@ if __name__ == "__main__":
         ip_list[i] = val+':22'
     ip_validate(ip_list, source)
 
-
-#     dicc = {'asd':'test'}
-#     host = '10.10.10.10'
-#     connect_checker = 'good'
-#     system_user = ['user1','user2']
-#     pass_auth = 'ENABLED'
-#     users_pub_key = ['hacker','test']
-#     print('''+----------------------------------------
-# | HOST: {0}
-# | connect check: {1}
-# | System users: {2}
-# | SSH config: 
-# | + Password auth: {3}
-# | + AllowUsers: {4}
-# | {5} Imported pub key from(count {6}):
-# | {7}
-# +----------------------------------------
-# '''.format(dicc, connect_checker,system_user,pass_auth,system_user,system_user[0],2,users_pub_key))
+    for i in ip_list:
+        pass
