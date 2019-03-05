@@ -4,7 +4,7 @@ Vagrant.configure("2") do |config|
       v.memory = 512
     end
   
-    (1..4).each do |i|
+    (1..5).each do |i|
         config.vm.define "server-#{i}" do |db|
             db.vm.box = "centos/7"
             db.vm.hostname = "server-#{i}"

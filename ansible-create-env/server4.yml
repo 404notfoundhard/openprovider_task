@@ -5,7 +5,7 @@
   gather_facts: false
   vars:
     pass_auth: "no"
-    allow_ssh_user: "AllowUsers service_user, vagrant"
+    allow_ssh_user: "AllowUsers service_user vagrant"
   tasks:
     - name: Create users
       user:
