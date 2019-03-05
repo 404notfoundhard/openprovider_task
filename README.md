@@ -31,9 +31,10 @@ password for all users: pass
 ```vagrant up```
 
  - ssh_key_users:
-   - my_user1
-   - my_user2
-   - hacker
+    - alex
+    - aphonyi
+    - travis
+    - vahtang
 - Machine:
    - server 1: # icmp_port_unreachable (firewall reject)
 
