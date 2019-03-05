@@ -7,73 +7,127 @@ from socket import inet_aton
 import re
 
 parser = argparse.ArgumentParser(description='ssh default port = 22', formatter_class=lambda prog: argparse.RawTextHelpFormatter(prog, width=200))
-def ip_validate(ip_list, source):
+def ip_validate(ip, source):
     try:
-        line = 0
-        for i, val in enumerate(ip_list):
-            ip = re.sub(r':[0-9]{2,5}$','',val)
-            inet_aton(ip)
+        inet_aton(ip)
     except Exception:
-        parser = argparse.ArgumentParser(description='Illegal IP address from '+source)
+        parser = argparse.ArgumentParser(description='Illegal IP address: '+ip+' from '+source)
         parser.print_help()
         exit(-2)
 
-def output(hosts, connect_checker, system_user, pass_auth, ssh_allow_users, ssh_users_with_pub_key):
+def output(host, connect_checker, system_user, pass_auth, ssh_allow_users, ssh_users_with_pub_key):
     # hosts = ['10.10.10.11']
     # connect_checker = 'good'
     # system_user = ['user1','user2']
     # pass_auth = 'ENABLED'
     # ssh_allow_users = ['user1','user2']
     # ssh_users_with_pub_key = {'user1':['service_user','system_user'],'user2':''}
-    for i in hosts:
-        print '+'+'-'*50
-        if 'bad' in connect_checker:
-            print '| HOST: '+i+' Connect status: '+connect_checker
-            print '+'+'-'*50
-            break
-        else:
-            print '| HOST: '+i+' Connect status: '+connect_checker
-            print '| System users: '+str(system_user)
-            print '| SSH config:'
-            print '| + PasswordAuthentication: '+pass_auth
-            print '| + AllowUsers: '+str(ssh_allow_users)
-            for key, val in ssh_users_with_pub_key.items():
-                print '| Imported pub key for '+key.upper()+': '
-                if val == '':
-                    print '|  - no imported pub key'
-                else:
-                    for i in val:
-                        print '|  + '+i
-        print '+'+'-'*50
+    print '+'+'-'*102
+    if 'connected' in connect_checker:
+        print '| HOST: '+host+' Connect status: '+connect_checker
+        print '| System users: '+str(system_user)
+        print '| SSH config:'
+        print '| + PasswordAuthentication: '+pass_auth
+        print '| + AllowUsers: '+str(ssh_allow_users)
+        for key, val in ssh_users_with_pub_key.items():
+            print '| Imported pub key for '+key.upper()+': '
+            if val == '':
+                print '|  - no imported pub key'
+            else:
+                for i in val:
+                    print '|  + '+i
+        print '+'+'-'*102
+    else:
+        print '| HOST: '+host+' Connect status: '+connect_checker
+        print '+'+'-'*102
 
-def ssh_connect(ip,login,password,key):
+def ssh_connect(ip,login,password,key,port):
     client = paramiko.SSHClient()
-    client.load_system_host_keys()
+    # client.load_system_host_keys()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        client.connect(ip,username=login,password=password,auth_timeout=2, timeout=2)
+        client.connect(ip,port=port,username=login,password=password,auth_timeout=2, timeout=2)
     except paramiko.ssh_exception.NoValidConnectionsError:
-        return 'Destination port unreacheble, it is possible to block with firewall.'
+        return 'Destination port unreacheble, it is possible to block with firewall', None
     except socket.timeout:
-        return 'Connection timeout.'
+        return 'Connection timeout', None
     except paramiko.ssh_exception.BadAuthenticationType as e:
-        return 'Bad authentication type, allowed type:'+str(e.allowed_types[0])
-    except paramiko.ssh_exception.AuthenticationException as f:
-        return 'Authentication failed'
-    except Exception:
-        return '-1'    
-    
+        return 'Bad authentication type, allowed type:'+str(e.allowed_types[0]), None
+    except paramiko.ssh_exception.AuthenticationException:
+        return 'Authentication failed, incorrect user or password', None
     else:
-        client.close()
-        return 'good'
+        return 'connected', client
         
-    stdin, stdout, stderr = client.exec_command('ls -la')
+    # stdin, stdout, stderr = client.exec_command('ls -la')
     
 
 
 
-def check_host(ip,login,password,key):
-    pass
+def check_host(ssh_cli, password):
+    users = []
+    pass_auth = False
+    AllowUsers = []
+    imported_pub_key = {}
+    # get sytem users
+    session = ssh_cli.get_transport().open_session()
+    session.set_combine_stderr(True)
+    session.get_pty()
+    # TODO: check if sudo exist
+    session.exec_command('sudo -k cat /etc/passwd')
+    stdin = session.makefile('wb', -1)
+    stdout = session.makefile('rb', -1)
+    stdin.write(password+'\n')
+    stdin.flush()
+    all_system_users =  stdout.read().split('\n')
+    for user in all_system_users:
+        if 'bin/bash' in user:
+            users.append(user.split(":")[0])
+    # get Auth_pass and AllowUsers value from sshd_config
+    session = ssh_cli.get_transport().open_session()
+    session.set_combine_stderr(True)
+    session.get_pty()
+    session.exec_command('sudo -k cat /etc/ssh/sshd_config')
+    stdin = session.makefile('wb', -1)
+    stdout = session.makefile('rb', -1)
+    stdin.write(password+'\n')
+    stdin.flush()
+    sshd_config = stdout.read().split('\n')
+    for line in sshd_config:
+        if 'PasswordAuthentication yes' in line:
+            pass_auth = True
+        if 'AllowUsers' in line:
+            AllowUsers = line.split()[1:]
+    # get pub key from user
+    for user in users:
+        session = ssh_cli.get_transport().open_session()
+        session.set_combine_stderr(True)
+        session.get_pty()
+        session.exec_command('sudo -k cat /home/'+user+'/.ssh/authorized_keys')
+        stdin = session.makefile('wb', -1)
+        stdout = session.makefile('rb', -1)
+        stdin.write(password+'\n')
+        stdin.flush()
+        raw_pub_key = stdout.read().split('\n')[2:]
+        # print a[2:]
+        raw_pub_key = filter(None,raw_pub_key)
+        # print raw_pub_key
+        # print '#'*20+user+'#'*20
+        pub_key_users = []
+        if 'No such file' in raw_pub_key[0]:
+            imported_pub_key[user]='No authorized_keys'
+        else:
+            for i in raw_pub_key:
+                pub_key_user = i.split('\n')[0].split()[-1:][0]
+                pub_key_users.append(pub_key_user)
+                # imported_pub_key[user] = key.split()[-1:][0]
+        imported_pub_key[user]=pub_key_users
+    print imported_pub_key
+        # print stdout.read()
+        # imported_pub_key.append(stdout.read().split()[7])
+    # print imported_pub_key
+    # print stderr.read()
+    session.close()
+    ssh_cli.close()
 
 if __name__ == "__main__":
     group_mut1 = parser.add_mutually_exclusive_group()
@@ -112,14 +166,24 @@ if __name__ == "__main__":
         parser = argparse.ArgumentParser(description='show help')
         parser.print_help()
         exit(-1)
+
     ip_list = filter(None, ip_list)
+    ip_port_dict= {}
     for i,val in enumerate(ip_list):
         if ':' in ip_list[i]:
-            continue
-        # ip_list[i] = val+':22'
-    ip_validate(ip_list, source)
+            # print val
+            port = re.search(r'(?<=:)[0-9]{2,5}$',val).group(0)
+            ip = re.sub(r':[0-9]{2,5}$','',val)
+            ip_validate(ip, source)
+            ip_port_dict[ip] = port
+        else:
+            port = '22'
+            ip_validate(val, source)
+            ip_port_dict[val] = port
 
-    for i in ip_list:
-        aaa = ssh_connect(i,login,password,key)
-        print aaa
-        print '=============='
+    for ip_addr, port in ip_port_dict.items():
+        connect_checker, ssh_client = ssh_connect(ip_addr,login,password,key,port)
+        if connect_checker != 'connected':
+            output(ip_addr,connect_checker,None,None,None,None)
+        else:
+            check_host(ssh_client, password)
