@@ -34,7 +34,7 @@
       authorized_key:
         user: "{{ item }}"
         state: present
-        key: "{{ lookup('file', 'files/my_user2.pub') }}"
+        key: "{{ lookup('file', 'files/alex.pub') }}"
         exclusive: yes
       with_items:
         - service_user
