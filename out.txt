@@ -1,0 +1,84 @@
++----------------------------------------------------------------
+| HOST: 10.10.10.15
+| Connect status: connected [warning]:
+| service_user is not in the sudoers file, trying gathering info
++----------------------------------------------------------------
+| System users: ['root', 'vagrant', 'service_user', 'user1', 'user2']
++----------------------------------------------------------------
+| SSH config:
+| + PasswordAuthentication: Unknown
+| + AllowUsers: ['Unknown']
++----------------------------------------------------------------
+| Imported pub key for SERVICE_USER: 
+|  + hacker
++----------------------------------------------------------------
+
+
++----------------------------------------------------------------
+| HOST: 10.10.10.14
+| Connect status: connected
++----------------------------------------------------------------
+| System users: ['root', 'vagrant', 'service_user', 'user2']
++----------------------------------------------------------------
+| SSH config:
+| + PasswordAuthentication: False
+| + AllowUsers: ['service_user', 'vagrant']
++----------------------------------------------------------------
+| Imported pub key for VAGRANT: 
+|  + vagrant
++----------------------------------------------------------------
+| Imported pub key for USER2: 
+|  + my_user2
++----------------------------------------------------------------
+| Imported pub key for ROOT: 
+|  + No authorized_keys
++----------------------------------------------------------------
+| Imported pub key for SERVICE_USER: 
+|  + my_user2
++----------------------------------------------------------------
+
+
++----------------------------------------------------------------
+| HOST: 10.10.10.11 Connect status: Destination port unreacheble,
+| it is possible to block with firewall
++----------------------------------------------------------------
+
+
++----------------------------------------------------------------
+| HOST: 10.10.10.13
+| Connect status: connected
++----------------------------------------------------------------
+| System users: ['root', 'vagrant', 'service_user', 'user1', 'user2']
++----------------------------------------------------------------
+| SSH config:
+| + PasswordAuthentication: True
+| + AllowUsers: ['service_user', 'user1', 'vagrant']
++----------------------------------------------------------------
+| Imported pub key for VAGRANT: 
+|  + vagrant
++----------------------------------------------------------------
+| Imported pub key for USER2: 
+|  + hacker
+|  + my_user1
+|  + my_user2
++----------------------------------------------------------------
+| Imported pub key for USER1: 
+|  + hacker
+|  + my_user1
+|  + my_user2
++----------------------------------------------------------------
+| Imported pub key for ROOT: 
+|  + No authorized_keys
++----------------------------------------------------------------
+| Imported pub key for SERVICE_USER: 
+|  + hacker
+|  + my_user1
+|  + my_user2
++----------------------------------------------------------------
+
+
++----------------------------------------------------------------
+| HOST: 10.10.10.12 Connect status: Connection timeout
++----------------------------------------------------------------
+
+
