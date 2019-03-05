@@ -1,4 +1,22 @@
 # Environment:
+### Example usage:  
+```
+ssh_checker.py -l service_user -p pass --key ansible-create-env/files/my_user2  --file host_list --output out.txt
+```
+```
+usage: ssh_checker.py [-h] [-l LOGIN] [-p PASSWORD] [--key KEY] [--file FILE | --ip IP] [--output OUT_FILE]
+
+default ssh port = 22, default output - stdout
+
+optional arguments:
+  -h, --help         show this help message and exit
+  -l LOGIN           login for connect
+  -p PASSWORD        password for connect and sudo
+  --key KEY          path to private key for auth
+  --file FILE        file where every line with ip[:port] value
+  --ip IP            single target, you can set custom port: 10.10.10.10:2200
+  --output OUT_FILE  file to store info about host(s)
+```
 - requirements:\
 Vagrant  
 ansible  
