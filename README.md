@@ -51,7 +51,7 @@ password for all users: pass
        - users: service_user, user2
        - AllowUsers: serviceuser
        - pub_key_imported_for: serviceuser, user2
-       - imported_ssh_key_users: my_user2
+       - imported_ssh_key_users: alex
        - PasswordAuthorization: no 
 
    - server 5: # Password auth enabled, but without sudo privileges
