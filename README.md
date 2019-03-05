@@ -1,7 +1,10 @@
 # Environment:
 - requirements:\
-Vagrant\
-ansible
+Vagrant  
+ansible  
+cryptography==2.4.2  
+argparse  
+paramiko  
 
 - env:  
 password for all users: pass 
@@ -31,3 +34,10 @@ password for all users: pass
        - pub_key_imported_for: serviceuser, user2
        - imported_ssh_key_users: my_user2
        - PasswordAuthorization: no 
+
+   - server 5: # Password auth enabled, but without sudo privileges
+       - users: service_user, user1, user2
+       - AllowUsers: serviceuser, user1
+       - pub_key_imported_for: serviceuser, user1, user2
+       - imported_ssh_key_users: all
+       - PasswordAuthorization: yes

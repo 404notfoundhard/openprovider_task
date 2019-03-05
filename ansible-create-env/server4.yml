@@ -5,16 +5,16 @@
   gather_facts: false
   vars:
     pass_auth: "no"
-    allow_ssh_user: "AllowUsers service_user, vagrant"
+    allow_ssh_user: "AllowUsers service_user vagrant"
   tasks:
     - name: Create users
       user:
         name: "{{ item }}"
         # password: pass
-        password: $1$salt$M6xQvx9eSlM4zTu69di5B/
+        password: $1$nmVTz36m$izByePox9z0xkP8ybQPtD1
         shell: /bin/bash
         createhome: yes
-        # group: wheel
+        group: wheel
         generate_ssh_key: yes
         ssh_key_bits: 2048
         ssh_key_file: .ssh/id_rsa

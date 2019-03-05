@@ -4,3 +4,4 @@
 - import_playbook: server2.yml
 - import_playbook: server3.yml
 - import_playbook: server4.yml
+- import_playbook: server5.yml
