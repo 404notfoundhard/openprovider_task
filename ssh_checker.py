@@ -125,6 +125,7 @@ def check_host(ssh_cli, password, sudo_flag):
         # get pub key from connected user
         stdin, stdout, stderr = ssh_cli.exec_command('cat /home/'+login+'/.ssh/authorized_keys')
         raw_pub_keys = stdout.read().split('\n')
+        # print raw_pub_keys
         raw_pub_keys = filter(None, raw_pub_keys)
         pub_key_users = []
         for raw_pub_key in raw_pub_keys:
@@ -148,8 +149,11 @@ def check_host(ssh_cli, password, sudo_flag):
         stdin.write(password+'\n')
         stdin.flush()
         all_system_users =  stdout.read().split('\n')
+        # print all_system_users
         for user in all_system_users:
             if 'bin/bash' in user:
+                users.append(user.split(":")[0])
+            if 'bin/zsh' in user:
                 users.append(user.split(":")[0])
         # get Auth_pass and AllowUsers value from sshd_config
         session = ssh_cli.get_transport().open_session()
@@ -177,6 +181,8 @@ def check_host(ssh_cli, password, sudo_flag):
             stdin.write(password+'\n')
             stdin.flush()
             raw_pub_key = stdout.read().split('\n')[2:]
+            # print user
+            # print raw_pub_key
             raw_pub_key = filter(None,raw_pub_key)
             # print raw_pub_key
             pub_key_users = []
